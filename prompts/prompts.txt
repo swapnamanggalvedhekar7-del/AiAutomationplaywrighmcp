@@ -1,0 +1,545 @@
+# Role
+
+Act as a **Senior Automation Test Engineer with 5+ years of hands-on experience in Python, Playwright, Pytest, test automation framework design, and CI/CD integration**.
+
+# Task
+
+Create a **production-ready Python Playwright automation framework and test scripts** to automate the test cases provided in the Context section.
+
+The solution should be maintainable, reusable, scalable, reliable, and suitable for execution locally as well as through **GitHub Actions or Jenkins**.
+
+---
+
+# Context
+
+The application under test is:
+
+**URL:** [https://pos.aksharatraining.in/login](https://pos.aksharatraining.in/login)
+
+The following test cases need to be automated.
+
+## TC_001 – Successful Login with Valid Credentials
+
+### Precondition
+
+Application is accessible at the login URL.
+
+### Test Steps
+
+1. Navigate to `https://pos.aksharatraining.in/login`
+2. Enter Username: `student123`
+3. Enter Password: `akshara123`
+4. Click the `Go` button.
+
+### Expected Results
+
+1. User is redirected to the Home dashboard (`/home`).
+2. Navigation bar displays:
+   - Home
+   - Items
+   - Item Kits
+   - Suppliers
+   - Reports
+   - Receivings
+   - Gift Cards
+3. Page title is `Open Source Point of Sale`.
+4. `Student Demo | Logout` is visible in the top-right corner.
+
+### Test Data
+
+```text
+Username: student123
+Password: akshara123
+```
+
+---
+
+## TC_002 – Login Fails with Invalid Credentials
+
+### Precondition
+
+Application is accessible at the login URL.
+
+### Test Steps
+
+1. Navigate to `https://pos.aksharatraining.in/login`
+2. Enter Username: `wronguser`
+3. Enter Password: `wrongpass`
+4. Click the `Go` button.
+
+### Expected Results
+
+1. User remains on the login page.
+2. An appropriate error/alert message is displayed.
+3. Username and password fields are cleared or appropriately highlighted, based on actual application behavior.
+4. User is not redirected to the dashboard.
+
+### Test Data
+
+```text
+Username: wronguser
+Password: wrongpass
+```
+
+---
+
+## TC_003 – Login with Empty Credentials
+
+### Precondition
+
+Application is accessible at the login URL.
+
+### Test Steps
+
+1. Navigate to `https://pos.aksharatraining.in/login`
+2. Leave the Username field empty.
+3. Leave the Password field empty.
+4. Click the `Go` button.
+
+### Expected Results
+
+1. Form submission is prevented.
+2. Appropriate validation error or browser required-field validation is displayed.
+3. User remains on the login page.
+
+### Test Data
+
+```text
+Username: empty
+Password: empty
+```
+
+---
+
+# Automation Requirements
+
+## 1. Framework and Technology
+
+Use:
+
+- Python
+- Playwright for Python
+- Pytest
+- Page Object Model (POM)
+- Pytest fixtures
+- Playwright `expect` assertions
+- Allure reporting
+- Playwright Trace Viewer
+- Screenshot capture on failure
+- Video recording when appropriate
+- Configuration managementging
+- Log
+
+Use the **Playwright MCP** where appropriate to inspect the application, identify elements, understand the DOM, and assist with generating reliable locators.
+
+---
+
+## 2. Analyze the Test Cases Before Coding
+
+Before generating the automation code:
+
+1. Read all test cases carefully.
+2. Understand the preconditions.
+3. Map every Test Step to an automation action.
+4. Map every Expected Result to an appropriate assertion.
+5. Use the supplied Test Data appropriately.
+6. Ignore any locator column or pre-existing locator suggestions.
+7. Inspect the application and determine the most reliable locators.
+
+Do not blindly automate the test steps without validating the application's actual behavior.
+
+---
+
+## 3. Locator Strategy
+
+Use the following locator priority:
+
+1. Playwright role-based locators:
+   - `get_by_role()`
+2. Accessible/test-oriented locators:
+   - `get_by_label()`
+   - `get_by_placeholder()`
+   - `get_by_text()`
+   - `get_by_test_id()`
+3. CSS selectors
+4. XPath only when necessary.
+
+Prefer **stable and user-facing locators** over fragile implementation-specific selectors.
+
+Do not use:
+
+- Absolute XPath
+- Index-based locators unless unavoidable
+- Arbitrary `nth()` usage when a unique locator can be created
+- Hard-coded waits such as `time.sleep()`
+- `page.wait_for_timeout()` unless there is a documented technical reason
+
+---
+
+## 4. Assertions
+
+Use Playwright's auto-waiting assertions wherever possible.
+
+Examples:
+
+- `expect(page).to_have_url()`
+- `expect(page).to_have_title()`
+- `expect(locator).to_be_visible()`
+- `expect(locator).to_have_text()`
+
+Use **hard assertions** for critical conditions that must stop the test when they fail.
+
+Use **soft assertions** only when multiple independent validations need to be reported together and continuing execution is meaningful.
+
+Do not use assertions unnecessarily.
+
+---
+
+## 5. Page Object Model
+
+Implement a clean Page Object Model.
+
+For example:
+
+```text
+pages/
+    login_page.py
+    home_page.py
+```
+
+Page objects should contain:
+
+- Locators
+- Page-specific actions
+- Reusable page-level methods
+
+Tests should primarily contain:
+
+- Test flow
+- Test data
+- Business-level validations
+
+Avoid putting excessive implementation details inside test cases.
+
+---
+
+## 6. Fixtures and Configuration
+
+Use Pytest fixtures appropriately for:
+
+- Playwright initialization
+- Browser
+- Browser context
+- Page
+- Base URL
+- Authentication/session setup where applicable
+
+Use appropriate fixture scopes.
+
+Avoid creating unnecessary fixtures merely to demonstrate framework features.
+
+Centralize configuration wherever practical.
+
+For example:
+
+```text
+config/
+    config.py
+```
+
+Environment-specific values should not be hard-coded throughout the framework.
+
+---
+
+## 7. Test Data Strategy
+
+For the current three login scenarios, use a simple and maintainable test-data approach.
+
+If multiple credentials or additional login combinations are introduced later, use:
+
+- Pytest parameterization for a small number of input variations.
+- Data-driven testing for larger external datasets.
+
+Do not introduce unnecessary data-driven infrastructure for only a few test cases.
+
+Sensitive credentials should preferably be externalized through environment variables or configuration rather than hard-coded in production code.
+
+---
+
+## 8. Reusability
+
+Create reusable utilities only where there is genuine duplication.
+
+Possible utilities may include:
+
+```text
+utils/
+    logger.py
+    config_reader.py
+    screenshot_helper.py
+```
+
+Common locators or actions should be centralized when they are genuinely reused.
+
+Avoid creating excessive helper classes or files that add unnecessary complexity.
+
+---
+
+## 9. Error Handling
+
+Do not wrap every test step in a generic `try/except`.
+
+Use exception handling only where it adds meaningful context or allows controlled cleanup/recovery.
+
+Pytest and Playwright failures should naturally propagate so that:
+
+- The test is marked as failed.
+- The failure is visible in reports.
+- Trace/screenshots/logs can be collected.
+
+If an exception is caught, log meaningful information and re-raise it.
+
+---
+
+## 10. Flakiness Prevention
+
+The framework must prioritize reliable execution.
+
+Use:
+
+- Playwright auto-waiting
+- Locator-based actions
+- `expect()` assertions
+- Appropriate fixture lifecycle management
+- Stable selectors
+- Proper navigation handling
+
+Do not use arbitrary sleep/wait statements to hide synchronization problems.
+
+---
+
+## 11. Trace, Screenshot and Video
+
+Configure Playwright tracing appropriately.
+
+Recommended behavior:
+
+- Capture trace on test failure or retry.
+- Capture screenshots on failure.
+- Record video when useful for debugging failures.
+
+Avoid generating unnecessary artifacts for every successful test unless there is a specific requirement.
+
+---
+
+## 12. Reporting
+
+Integrate **Allure reporting**.
+
+The framework should provide:
+
+- Test status
+- Test name
+- Failure information
+- Screenshots on failure
+- Trace information where applicable
+- Useful logs
+
+Include the required Allure dependencies and execution commands.
+
+---
+
+## 13. Requirements File
+
+Create a `requirements.txt` containing all required Python packages needed to execute the framework.
+
+The project should clearly document the installation process, including:
+
+```bash
+pip install -r requirements.txt
+playwright install
+```
+
+If additional tools such as Allure CLI are required, clearly document them separately rather than assuming they are installed through `pip`.
+
+---
+
+## 14. CI/CD Readiness
+
+The framework should be structured so that it can later be executed through:
+
+- GitHub Actions
+- Jenkins
+
+Include the necessary configuration or example commands where appropriate.
+
+Do not introduce CI/CD-specific complexity unless required for execution.
+
+---
+
+## 15. SOLID and Framework Design
+
+Follow SOLID principles where they improve:
+
+- Maintainability
+- Reusability
+- Separation of concerns
+- Extensibility
+
+Do not force SOLID abstractions or design patterns where they unnecessarily complicate a small framework.
+
+Prefer **simple, clean, production-oriented design over over-engineering**.
+
+---
+
+## 16. Comments and Documentation
+
+Add comments only where they provide meaningful context.
+
+Do not comment every line of code.
+
+Document:
+
+- Framework structure
+- Installation steps
+- Execution commands
+- Reporting commands
+- Configuration requirements
+- CI/CD execution where applicable
+
+---
+
+## 17. Self-Healing / Failure Recovery
+
+Do not silently modify tests when they fail.
+
+If a test fails because of:
+
+- Incorrect locator
+- Timing/synchronization issue
+- Incorrect assumption about application behavior
+- Application change
+
+Analyze the failure and determine the root cause.
+
+If a correction is required, explain:
+
+1. What failed.
+2. Why it failed.
+3. What change is proposed.
+4. Why the proposed change is reliable.
+
+Ask for approval before making a significant framework or test-design change.
+
+Do not implement a "self-healing" mechanism that silently hides genuine application defects.
+
+---
+
+# Expected Project Structure
+
+Use a structure similar to:
+
+```text
+playwright-python-framework/
+│
+├── tests/
+│   └── test_login.py
+│
+├── pages/
+│   ├── login_page.py
+│   └── home_page.py
+│
+├── utils/
+│   ├── logger.py
+│   └── config_reader.py
+│
+├── config/
+│   └── config.py
+│
+├── test_data/
+│   └── login_data.py
+│
+├── conftest.py
+├── pytest.ini
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+Modify this structure if the actual application or framework requirements justify a different organization.
+
+---
+
+# Execution Requirements
+
+The generated solution must be:
+
+- Executable
+- Maintainable
+- Reusable
+- Scalable
+- Stable
+- IDE-independent
+- Pytest-compatible
+- CI/CD-ready
+
+The automation should be executable from the command line as well as from common IDEs such as **PyCharm and VS Code**.
+
+Example:
+
+```bash
+pytest
+```
+
+and, where applicable:
+
+```bash
+pytest --alluredir=allure-results
+```
+
+---
+
+# Important Constraints
+
+1. Do not invent application behavior.
+2. Do not assume locators without inspecting the application.
+3. Do not use unnecessary waits.
+4. Do not over-engineer the framework for only three test cases.
+5. Reuse components only where reuse provides actual value.
+6. Keep test cases readable from a business perspective.
+7. Preserve traceability between the manual test cases and automation.
+8. If actual application behavior differs from the Expected Results, clearly identify the difference instead of silently changing the requirement.
+9. If a technical decision is ambiguous, explain the decision and ask for approval before making a significant change.
+10. Prioritize **reliability, maintainability, and readability over complexity**.
+
+---
+
+# Output
+
+Provide:
+
+1. Complete project structure.
+2. All required Python files.
+3. `requirements.txt`.
+4. `pytest.ini`.
+5. `conftest.py`.
+6. Page Object classes.
+7. Test scripts for TC_001, TC_002 and TC_003.
+8. Configuration and utility files where genuinely required.
+9. README with installation and execution instructions.
+10. Allure execution instructions.
+11. CI/CD execution guidance where applicable.
+12. Brief explanation of the framework architecture and important design decisions.
+
+Before finalizing the solution, validate the generated code for:
+
+- Syntax errors
+- Import errors
+- Incorrect Playwright APIs
+- Incorrect fixture usage
+- Locator issues
+- Assertion issues
+- Configuration issues
+- Dependency issues
+
+The final solution should be **production-oriented rather than a simple demonstration script**.

@@ -1,0 +1,36 @@
+// Requires on the agent: Python 3.10+, the Jenkins Allure plugin (with an Allure
+// commandline tool configured), and a "Username with password" credential `ospos-login`.
+pipeline {
+    agent any
+    environment {
+        BASE_URL  = 'https://pos.aksharatraining.in'
+        POS_CREDS = credentials('ospos-login')
+    }
+    stages {
+        stage('Install') {
+            steps {
+                sh '''
+                    python3 -m venv .venv
+                    . .venv/bin/activate
+                    pip install -r requirements.txt
+                    playwright install --with-deps chromium
+                '''
+            }
+        }
+        stage('Test') {
+            steps {
+                sh '''
+                    . .venv/bin/activate
+                    export POS_USERNAME="$POS_CREDS_USR" POS_PASSWORD="$POS_CREDS_PSW"
+                    pytest --browser chromium
+                '''
+            }
+        }
+    }
+    post {
+        always {
+            allure results: [[path: 'allure-results']]
+            archiveArtifacts artifacts: 'test-results/**, logs/**', allowEmptyArchive: true
+        }
+    }
+}

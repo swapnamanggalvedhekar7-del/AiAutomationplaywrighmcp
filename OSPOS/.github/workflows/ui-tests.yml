@@ -1,0 +1,41 @@
+name: UI tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  login-tests:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ vars.BASE_URL || 'https://pos.aksharatraining.in' }}
+      POS_USERNAME: ${{ secrets.POS_USERNAME }}
+      POS_PASSWORD: ${{ secrets.POS_PASSWORD }}
+      POS_DISPLAY_NAME: ${{ vars.POS_DISPLAY_NAME || 'Student Demo' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run tests
+        run: pytest --browser chromium
+
+      - name: Upload Allure results, failure artifacts and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: |
+            allure-results/
+            test-results/
+            logs/
+          if-no-files-found: ignore
